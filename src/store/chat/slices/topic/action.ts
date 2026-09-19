@@ -109,6 +109,15 @@ export interface SwitchTopicOptions {
    */
   clearNewKey?: boolean;
   /**
+   * Only apply the switch while the user is still sitting on this topic id.
+   * Send flows pass the conversation bucket the send belongs to: when the
+   * user navigates to another topic while the send's await is in flight,
+   * the continuation skips the switch instead of yanking the UI back to the
+   * sent topic. Pass `null` to require the pre-switch blank (new-conversation)
+   * view.
+   */
+  onlyIfActiveTopic?: string | null;
+  /**
    * Explicit scope for clearing new key data
    * If not provided, will be inferred from store state (activeGroupId)
    */
@@ -1598,6 +1607,22 @@ export class ChatTopicActionImpl {
 
   switchTopic = async (id?: string | null, options?: SwitchTopicOptions): Promise<void> => {
     const opts = options ?? {};
+
+    // Send-flow continuation guard: if the caller requires the user to still
+    // be on a specific topic and they've navigated elsewhere while the send's
+    // awaits were in flight, drop the switch instead of yanking the UI (and
+    // the URL, via ChatHydration's route sync) back to the sent topic. The
+    // epoch token below cannot catch this — the user's switch happened in
+    // between, but this call is still the newest one. Runs before the epoch
+    // bump: a skipped switch must not invalidate a concurrent switch's
+    // pending revalidation.
+    if (
+      opts.onlyIfActiveTopic !== undefined &&
+      this.#get().activeTopicId !== opts.onlyIfActiveTopic
+    ) {
+      return;
+    }
+
     const epoch = ++this.#switchTopicEpoch;
 
     const { activeAgentId, activeGroupId } = this.#get();

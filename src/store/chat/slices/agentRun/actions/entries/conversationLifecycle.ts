@@ -1086,7 +1086,14 @@ export class ConversationLifecycleActionImpl {
         messageMapKey({ ...operationContext, topicId: null }),
         currentContextKey,
       );
-      await this.#get().switchTopic(mintedTopicId, { skipRefreshMessage: true });
+      // The pre-mint view the user was on when this send started. If they
+      // navigated away while the awaits above (access check, snapshots) were in
+      // flight, don't yank them onto the new topic's bucket.
+      const sendOriginTopicId = context.topicId ?? null;
+      await this.#get().switchTopic(mintedTopicId, {
+        onlyIfActiveTopic: sendOriginTopicId,
+        skipRefreshMessage: true,
+      });
     }
 
     // The topic list store is paginated — a deep-linked older topic can be the
@@ -1486,6 +1493,9 @@ export class ConversationLifecycleActionImpl {
         } else {
           await this.#get().switchTopic(heteroData.topicId, {
             clearNewKey: true,
+            // Guard against yanking the user back if they navigated to another
+            // topic while the persistence round-trip was in flight.
+            onlyIfActiveTopic: operationContext.topicId,
             skipRefreshMessage: true,
           });
         }
@@ -2026,6 +2036,11 @@ export class ConversationLifecycleActionImpl {
           // clearNewKey: true ensures the _new key data is cleared after topic creation
           await this.#get().switchTopic(data.topicId, {
             clearNewKey: true,
+            // The send pivoted to the minted topic bucket at send time. If the
+            // user navigated to another topic while the persistence round-trip
+            // was in flight, leave them where they are — the new topic's unread
+            // badge surfaces the completed reply instead of yanking the view back.
+            onlyIfActiveTopic: operationContext.topicId,
             skipRefreshMessage: true,
           });
         }

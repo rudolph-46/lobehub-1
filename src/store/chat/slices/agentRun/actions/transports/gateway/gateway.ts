@@ -1012,6 +1012,9 @@ export class GatewayActionImpl {
       if (!messageContext.isolatedTopic) {
         await this.#get().switchTopic(result.topicId, {
           clearNewKey: true,
+          // Guard against yanking the user back if they navigated to another
+          // topic while execAgentTask's persistence round-trip was in flight.
+          onlyIfActiveTopic: messageContext.topicId ?? null,
           skipRefreshMessage: true,
         });
       }

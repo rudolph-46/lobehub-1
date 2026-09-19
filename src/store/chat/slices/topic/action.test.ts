@@ -1758,6 +1758,104 @@ describe('topic action', () => {
       expect(revalidateSpy).toHaveBeenCalledTimes(1);
       expect(useChatStore.getState().activeTopicId).toBe('topic-b');
     });
+
+    describe('onlyIfActiveTopic guard', () => {
+      it('skips the switch when the user has navigated to another topic', async () => {
+        // Regression: a send's continuation calls switchTopic(newTopicId) after
+        // the persistence round-trip. If the user switched topics while that
+        // await was in flight, the unconditional switch yanked the UI (and the
+        // URL) back to the sent topic. The guard must drop the switch instead.
+        const { result } = renderHook(() => useChatStore());
+        const revalidateSpy = vi
+          .spyOn(result.current, 'revalidateMessages')
+          .mockResolvedValue(undefined);
+
+        await act(async () => {
+          useChatStore.setState({ activeTopicId: 'topic-user-moved-to' });
+        });
+
+        await act(async () => {
+          await result.current.switchTopic('topic-from-send', {
+            clearNewKey: true,
+            onlyIfActiveTopic: 'topic-from-send',
+            skipRefreshMessage: true,
+          });
+        });
+
+        // The user's own topic stays active; the stale send continuation is a no-op.
+        expect(useChatStore.getState().activeTopicId).toBe('topic-user-moved-to');
+        expect(revalidateSpy).not.toHaveBeenCalled();
+      });
+
+      it('skips the switch when the user moved to the blank new-conversation view', async () => {
+        const { result } = renderHook(() => useChatStore());
+        vi.spyOn(result.current, 'revalidateMessages').mockResolvedValue(undefined);
+        await act(async () => {
+          useChatStore.setState({ activeTopicId: null });
+        });
+
+        await act(async () => {
+          await result.current.switchTopic('topic-from-send', {
+            clearNewKey: true,
+            onlyIfActiveTopic: 'topic-from-send',
+            skipRefreshMessage: true,
+          });
+        });
+
+        expect(useChatStore.getState().activeTopicId).toBeNull();
+      });
+
+      it('applies the switch when the user is still on the expected topic', async () => {
+        const { result } = renderHook(() => useChatStore());
+        const revalidateSpy = vi
+          .spyOn(result.current, 'revalidateMessages')
+          .mockResolvedValue(undefined);
+
+        await act(async () => {
+          useChatStore.setState({ activeTopicId: 'topic-from-send' });
+        });
+
+        await act(async () => {
+          await result.current.switchTopic('topic-from-send', {
+            clearNewKey: true,
+            onlyIfActiveTopic: 'topic-from-send',
+            skipRefreshMessage: true,
+          });
+        });
+
+        expect(useChatStore.getState().activeTopicId).toBe('topic-from-send');
+        // clearNewKey still runs its side effects on an applied switch.
+        expect(useChatStore.getState().activeThreadId).toBeUndefined();
+        // skipRefreshMessage still suppresses the revalidation on an applied switch.
+        expect(revalidateSpy).not.toHaveBeenCalled();
+      });
+
+      it('does not consume the switch epoch when the guard skips', async () => {
+        const { result } = renderHook(() => useChatStore());
+        const revalidateSpy = vi
+          .spyOn(result.current, 'revalidateMessages')
+          .mockResolvedValue(undefined);
+
+        await act(async () => {
+          useChatStore.setState({ activeTopicId: 'other-topic' });
+        });
+
+        // A guarded (skipped) call must not invalidate a concurrent normal
+        // switch's pending revalidation: the skipped call returns before the
+        // epoch bump, so the epoch only moves for real switches.
+        await act(async () => {
+          const guarded = result.current.switchTopic('topic-from-send', {
+            onlyIfActiveTopic: 'topic-from-send',
+            skipRefreshMessage: true,
+          });
+          const real = result.current.switchTopic('real-topic');
+          await Promise.all([guarded, real]);
+        });
+
+        expect(useChatStore.getState().activeTopicId).toBe('real-topic');
+        expect(revalidateSpy).toHaveBeenCalledTimes(1);
+      });
+    });
   });
   describe('removeSessionTopics', () => {
     it('should remove all topics from the current session and refresh the topic list', async () => {
