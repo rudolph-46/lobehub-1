@@ -21,6 +21,10 @@ export const resolveNavPanelKey = (
       return 'discover';
     }
 
+    case 'crm': {
+      return 'crm';
+    }
+
     case 'eval': {
       return childSegment === 'bench' ? 'evalBench' : 'eval';
     }

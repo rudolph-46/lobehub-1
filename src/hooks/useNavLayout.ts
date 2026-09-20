@@ -61,6 +61,12 @@ export const useNavLayout = (): NavLayout => {
           url: '/tasks',
         },
         {
+          icon: getRouteById('crm')!.icon,
+          key: SidebarTabKey.Crm,
+          title: t('tab.crm'),
+          url: '/crm',
+        },
+        {
           icon: getRouteById('resource')!.icon,
           key: SidebarTabKey.Resource,
           title: t('tab.resource'),

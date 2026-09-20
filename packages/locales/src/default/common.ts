@@ -212,6 +212,7 @@ export default {
 
   'cmdk.keywords.submitIssue': 'issue bug problem feedback',
 
+  'cmdk.keywords.crm': 'crm leads prospects pipeline sales',
   'cmdk.keywords.tasks': 'tasks todo agent kanban',
 
   'cmdk.keywords.usage': 'usage statistics consumption quota',
@@ -294,6 +295,7 @@ export default {
   'cmdk.settings': 'Settings',
   'cmdk.starOnGitHub': 'Star us on GitHub',
   'cmdk.submitIssue': 'Submit Issue',
+  'cmdk.crm': 'CRM',
   'cmdk.tasks': 'Tasks',
   'cmdk.theme': 'Theme',
   'cmdk.themeAuto': 'Auto',
@@ -619,6 +621,7 @@ export default {
   'tab.me': 'Me',
   'tab.memory': 'Memory',
   'tab.pages': 'Pages',
+  'tab.crm': 'CRM',
   'tab.resource': 'Resources',
   'tab.search': 'Search',
   'tab.setting': 'Settings',

@@ -1,4 +1,7 @@
-import { type LucideIcon } from 'lucide-react';
+import {
+  ContactIcon,
+  type LucideIcon,
+} from 'lucide-react';
 import {
   BrainCircuit,
   FilePenIcon,
@@ -106,6 +109,16 @@ export const NAVIGATION_ROUTES: NavigationRoute[] = [
     keywordsKey: 'cmdk.keywords.tasks',
     path: '/tasks',
     pathPrefix: '/tasks',
+  },
+  {
+    cmdkKey: 'cmdk.crm',
+    electronKey: 'navigation.crm',
+    icon: ContactIcon,
+    id: 'crm',
+    keywords: ['crm', 'leads', 'prospects', 'pipeline', 'sales'],
+    keywordsKey: 'cmdk.keywords.crm',
+    path: '/crm',
+    pathPrefix: '/crm',
   },
   {
     cmdkKey: 'cmdk.settings',

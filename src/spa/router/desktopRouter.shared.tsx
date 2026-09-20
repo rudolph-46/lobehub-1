@@ -2,6 +2,7 @@
 
 import {
   BrainCircuit,
+  ContactIcon,
   Download,
   FilePenIcon,
   FilesIcon,
@@ -1039,6 +1040,30 @@ export const sharedMainAreaChildren: RouteObject[] = [
     ),
     errorElement: <ErrorBoundary resetPath=".." />,
     path: 'project/:projectId',
+  },
+
+  {
+    children: [
+      {
+        children: [
+          {
+            element: dynamicElement(() => import('@/routes/(main)/crm'), 'Desktop > CRM', {
+              preloadId: 'crm',
+            }),
+            handle: {
+              meta: routeMeta({
+                icon: ContactIcon,
+                Skeleton: createSurfaceSkeleton('list'),
+                titleKey: 'navigation.crm',
+              }),
+            },
+            index: true,
+          },
+        ],
+        errorElement: <ErrorBoundary resetPath=".." />,
+        path: 'crm',
+      },
+    ],
   },
 
   {
