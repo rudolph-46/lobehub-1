@@ -21,6 +21,8 @@ export const config = {
     '/apps(.*)',
     '/community',
     '/community(.*)',
+    '/crm',
+    '/crm(.*)',
     '/labs',
     '/eval',
     '/eval(.*)',
