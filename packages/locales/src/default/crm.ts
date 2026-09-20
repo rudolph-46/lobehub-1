@@ -61,7 +61,10 @@ export default {
   'status.qualified': 'Qualified',
   'status.won': 'Won',
 
-  'title': 'CRM',
+  'table.columns': 'Columns',
+  'table.empty': 'No lead matches these filters.',
+
+  'title': 'Contacts',
 
   'visibility.private': 'Private',
   'visibility.shared': 'Shared',

@@ -1,5 +1,6 @@
 'use client';
 
+import { Flexbox } from '@lobehub/ui';
 import { memo, useLayoutEffect } from 'react';
 import { useLocation, useParams, useSearchParams } from 'react-router';
 
@@ -11,7 +12,8 @@ import { parseWorkGalleryKey } from '@/features/WorkGallery/const';
 import { useWorkspaceAwareNavigate } from '@/features/Workspace/useWorkspaceAwareNavigate';
 import { FilesTabs } from '@/types/files';
 
-import HomeDashboard from './Home';
+import DriveHeader from './DriveHeader';
+import Libraries from './Home/Libraries';
 
 /**
  * Path segment → category for routes that own one: /resource/all,
@@ -117,7 +119,23 @@ const ResourceHomePage = memo(() => {
 
   if (worksKey) return <WorkGallery galleryKey={worksKey} />;
 
-  return <ResourceManager content={isValidPathCategory ? undefined : <HomeDashboard />} />;
+  // The bare /resource route is the Drive home: the Explorer grid with a
+  // Drive-style header. In LobeHub the top-level "folders" are libraries, so
+  // they sit above the loose files the root list can show.
+  const isDriveHome = !isValidPathCategory;
+
+  return (
+    <ResourceManager
+      explorerHeader={isDriveHome ? <DriveHeader /> : undefined}
+      explorerTop={
+        isDriveHome ? (
+          <Flexbox paddingBlock={16} paddingInline={24}>
+            <Libraries />
+          </Flexbox>
+        ) : undefined
+      }
+    />
+  );
 });
 
 ResourceHomePage.displayName = 'ResourceHomePage';

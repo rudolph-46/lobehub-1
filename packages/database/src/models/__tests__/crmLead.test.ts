@@ -26,7 +26,9 @@ afterEach(async () => {
 describe('buildDedupeKey', () => {
   it('ignores case, accents and punctuation', () => {
     expect(buildDedupeKey('Hôtel de la Paix', 'Douala')).toBe('hotel-de-la-paix|douala');
-    expect(buildDedupeKey('hotel  de la  paix!', 'douala')).toBe(buildDedupeKey('Hôtel de la Paix', 'Douala'));
+    expect(buildDedupeKey('hotel  de la  paix!', 'douala')).toBe(
+      buildDedupeKey('Hôtel de la Paix', 'Douala'),
+    );
   });
 });
 
@@ -82,7 +84,11 @@ describe('CrmLeadModel', () => {
   describe('sharing', () => {
     it('shows shared leads to every user and private ones only to their creator', async () => {
       const shared = await model.upsert({ city: 'Douala', name: 'Hôtel Partagé' });
-      const priv = await model.upsert({ city: 'Yaoundé', name: 'Hôtel Privé', visibility: 'private' });
+      const priv = await model.upsert({
+        city: 'Yaoundé',
+        name: 'Hôtel Privé',
+        visibility: 'private',
+      });
 
       const seenByOther = await otherModel.list();
       expect(seenByOther.items.map((l) => l.id)).toEqual([shared.lead.id]);
@@ -122,6 +128,18 @@ describe('CrmLeadModel', () => {
       expect((await model.list({ q: 'bastos' })).items[0].name).toBe('Auberge Bastos');
       expect((await model.list({ city: 'douala' })).items[0].name).toBe('Hôtel Akwa');
       expect((await model.list()).total).toBe(2);
+    });
+
+    it('honours the sort direction', async () => {
+      await model.upsert({ city: 'Douala', name: 'Hôtel Akwa', score: 5 });
+      await model.upsert({ city: 'Yaoundé', name: 'Auberge Bastos', score: 2 });
+
+      expect((await model.list({ sortBy: 'score', sortOrder: 'asc' })).items[0].name).toBe(
+        'Auberge Bastos',
+      );
+      expect((await model.list({ sortBy: 'score', sortOrder: 'desc' })).items[0].name).toBe(
+        'Hôtel Akwa',
+      );
     });
   });
 

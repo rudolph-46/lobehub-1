@@ -47,7 +47,7 @@ export default {
   'navigation.sharedAgent': 'Shared Agent',
   'navigation.stats': 'Statistics',
   'navigation.task': 'Task',
-  'navigation.crm': 'CRM',
+  'navigation.crm': 'Contacts',
   'navigation.tasks': 'Tasks',
   'navigation.goals': 'Goals',
   'navigation.topics': 'Topics',

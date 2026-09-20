@@ -1,5 +1,5 @@
 import { getDefaultResourceViewMode } from '@/features/ResourceManager/components/Explorer/viewMode';
-import type { FilesTabs } from '@/types/files';
+import { FilesTabs } from '@/types/files';
 
 export type ResourceSkeletonView = 'list' | 'masonry' | 'works';
 
@@ -12,5 +12,8 @@ export const resolveResourceSkeletonView = (
   if (segment === 'works') return 'works';
   if (requestedView === 'list' || requestedView === 'masonry') return requestedView;
 
-  return getDefaultResourceViewMode(segment as FilesTabs);
+  // The bare /resource route is the Drive home, whose default is the grid.
+  const category = /\/resource\/?$/.test(pathname) ? FilesTabs.Home : (segment as FilesTabs);
+
+  return getDefaultResourceViewMode(category);
 };

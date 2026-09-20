@@ -4,6 +4,7 @@ import { resolveResourceSkeletonView } from './skeletonView';
 
 describe('resolveResourceSkeletonView', () => {
   it.each([
+    ['/resource', null, 'masonry'],
     ['/resource/files', null, 'list'],
     ['/resource/images', null, 'masonry'],
     ['/resource/images', 'list', 'list'],

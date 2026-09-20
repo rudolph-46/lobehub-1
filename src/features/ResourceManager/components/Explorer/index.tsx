@@ -1,7 +1,7 @@
 'use client';
 
 import { Flexbox } from '@lobehub/ui';
-import { memo, useMemo } from 'react';
+import { memo, type ReactNode, useMemo } from 'react';
 
 import AsyncBoundary from '@/components/AsyncBoundary';
 import { useFolderPath } from '@/features/ResourceManager/hooks/useFolderPath';
@@ -32,7 +32,14 @@ import { useCheckTaskStatus } from './useCheckTaskStatus';
  * It's a un-reusable component for business logic only.
  * So we depend on context, not props.
  */
-const ResourceExplorer = memo(() => {
+interface ResourceExplorerProps {
+  /** Replaces the default toolbar; used by the resource home Drive header. */
+  header?: ReactNode;
+  /** Optional block rendered between the toolbar and the list/grid. */
+  topContent?: ReactNode;
+}
+
+const ResourceExplorer = memo<ResourceExplorerProps>(({ header, topContent }) => {
   // Sync store state with URL query parameters
   useResourceManagerUrlSync();
 
@@ -135,7 +142,8 @@ const ResourceExplorer = memo(() => {
   return (
     <KnowledgeBaseListProvider>
       <Flexbox height={'100%'}>
-        <Header />
+        {header ?? <Header />}
+        {topContent}
         <Flexbox horizontal flex={1} style={{ minHeight: 0, overflow: 'hidden' }}>
           <div style={{ flex: 1, overflow: 'hidden', position: 'relative', minWidth: 0 }}>
             {/*

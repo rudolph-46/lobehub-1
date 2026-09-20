@@ -1,4 +1,9 @@
-import type { CrmFieldType, CrmInteractionType, CrmLeadStatus, CrmLeadVisibility } from '@lobechat/types';
+import type {
+  CrmFieldType,
+  CrmInteractionType,
+  CrmLeadStatus,
+  CrmLeadVisibility,
+} from '@lobechat/types';
 
 import { lambdaClient } from '@/libs/trpc/client';
 
@@ -9,6 +14,7 @@ export interface LeadListParams {
   q?: string;
   scoreMin?: number;
   sortBy?: 'createdAt' | 'updatedAt' | 'score';
+  sortOrder?: 'asc' | 'desc';
   statuses?: CrmLeadStatus[];
 }
 

@@ -3,6 +3,7 @@ import { FilesTabs } from '@/types/files';
 
 const GALLERY_FIRST_CATEGORIES = new Set<FilesTabs>([
   FilesTabs.Audios,
+  FilesTabs.Home,
   FilesTabs.Images,
   FilesTabs.Videos,
   FilesTabs.Websites,

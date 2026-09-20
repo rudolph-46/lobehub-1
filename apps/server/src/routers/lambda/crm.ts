@@ -36,6 +36,7 @@ const listInput = z.object({
   q: z.string().optional(),
   scoreMin: z.number().int().min(1).max(5).optional(),
   sortBy: z.enum(['createdAt', 'updatedAt', 'score']).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
   statuses: z.array(z.enum(CRM_LEAD_STATUSES)).max(6).optional(),
 });
 
@@ -50,7 +51,9 @@ const upsertInput = z.object({
   category: z.string().nullish(),
   city: z.string().nullish(),
   createdByAgentId: z.string().optional(),
-  customFields: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()])).optional(),
+  customFields: z
+    .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
+    .optional(),
   district: z.string().nullish(),
   email: z.string().nullish(),
   name: z.string().min(1).max(255),
@@ -138,7 +141,8 @@ export const crmRouter = router({
 
   get: crmProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
     const lead = await ctx.crmLeadModel.findById(input.id);
-    if (!lead) throw new TRPCError({ code: 'NOT_FOUND', message: `Lead introuvable : ${input.id}` });
+    if (!lead)
+      throw new TRPCError({ code: 'NOT_FOUND', message: `Lead introuvable : ${input.id}` });
 
     const interactions = await ctx.crmLeadModel.listInteractions(input.id);
     return { ...lead, interactions };

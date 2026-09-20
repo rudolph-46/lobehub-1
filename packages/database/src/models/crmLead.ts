@@ -20,6 +20,8 @@ export interface CrmLeadListParams {
   q?: string;
   scoreMin?: number;
   sortBy?: 'createdAt' | 'updatedAt' | 'score';
+  /** Direction applied to `sortBy`; defaults to newest/highest first. */
+  sortOrder?: 'asc' | 'desc';
   statuses?: CrmLeadStatus[];
 }
 
@@ -47,7 +49,7 @@ export const buildDedupeKey = (name: string, city?: string | null) => {
   const slug = (value: string) =>
     value
       .normalize('NFD')
-      .replaceAll(/[̀-ͯ]/g, '')
+      .replaceAll(/[\u0300-\u036F]/g, '')
       .toLowerCase()
       .replaceAll(/[^a-z0-9]+/g, '-')
       .replaceAll(/^-|-$/g, '');
@@ -88,7 +90,16 @@ export class CrmLeadModel {
     });
 
   list = async (params: CrmLeadListParams = {}) => {
-    const { city, limit = 50, offset = 0, q, scoreMin, sortBy = 'updatedAt', statuses } = params;
+    const {
+      city,
+      limit = 50,
+      offset = 0,
+      q,
+      scoreMin,
+      sortBy = 'updatedAt',
+      sortOrder = 'desc',
+      statuses,
+    } = params;
 
     const conditions: SQL[] = [this.readable()];
     if (statuses?.length) conditions.push(inArray(crmLeads.status, statuses));
@@ -107,12 +118,13 @@ export class CrmLeadModel {
     }
 
     const where = and(...conditions);
+    const direction = sortOrder === 'asc' ? asc : desc;
     const orderBy =
       sortBy === 'score'
-        ? [desc(crmLeads.score), desc(crmLeads.updatedAt)]
+        ? [direction(crmLeads.score), desc(crmLeads.updatedAt)]
         : sortBy === 'createdAt'
-          ? [desc(crmLeads.createdAt)]
-          : [desc(crmLeads.updatedAt)];
+          ? [direction(crmLeads.createdAt)]
+          : [direction(crmLeads.updatedAt)];
 
     const [items, [total]] = await Promise.all([
       this.db.query.crmLeads.findMany({ limit, offset, orderBy, where }),
@@ -190,8 +202,7 @@ export class CrmLeadModel {
   /** Deletion stays with the creator; everyone else can only edit. */
   delete = async (id: string) => {
     const lead = await this.assertReadable(id);
-    if (lead.userId !== this.userId)
-      throw new Error('Seul le créateur du lead peut le supprimer.');
+    if (lead.userId !== this.userId) throw new Error('Seul le créateur du lead peut le supprimer.');
 
     await this.db.delete(crmLeads).where(eq(crmLeads.id, id));
     return lead;

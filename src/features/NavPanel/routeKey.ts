@@ -21,10 +21,6 @@ export const resolveNavPanelKey = (
       return 'discover';
     }
 
-    case 'crm': {
-      return 'crm';
-    }
-
     case 'eval': {
       return childSegment === 'bench' ? 'evalBench' : 'eval';
     }
@@ -50,7 +46,9 @@ export const resolveNavPanelKey = (
     }
 
     case 'resource': {
-      return childSegment === 'library' ? 'resourceLibrary' : 'resource';
+      // The resource home reuses the standard sidebar (like /tasks); only a
+      // knowledge-base detail owns its dedicated tree sidebar.
+      return childSegment === 'library' ? 'resourceLibrary' : 'home';
     }
 
     case 'video': {

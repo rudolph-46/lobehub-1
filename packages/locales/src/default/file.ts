@@ -16,6 +16,9 @@ export default {
   'detail.data.embedding.processing': 'In progress',
   'detail.data.embedding.success': 'Completed',
   'detail.data.embeddingStatus': 'embedding',
+  'drive.askAgent': 'Ask the agent',
+  'drive.filter.type': 'Type',
+  'drive.title': 'My Drive',
   'empty': 'No files or folders have been uploaded yet.',
   'header.actions.builtInBlockList.filtered': '{{ignored}} files filtered (out of {{total}} total)',
   'notFound.desc':
