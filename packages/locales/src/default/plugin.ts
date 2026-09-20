@@ -352,6 +352,13 @@ export default {
   'builtins.lobe-local-system.inspector.rename.result':
     '<old>{{oldName}}</old> → <new>{{newName}}</new>',
   'builtins.lobe-local-system.title': 'Local System',
+  'builtins.lobe-crm.apiName.addInteraction': 'Add interaction',
+  'builtins.lobe-crm.apiName.getLead': 'Read lead',
+  'builtins.lobe-crm.apiName.listFields': 'List custom fields',
+  'builtins.lobe-crm.apiName.searchLeads': 'Search leads',
+  'builtins.lobe-crm.apiName.setLeadStatus': 'Change lead status',
+  'builtins.lobe-crm.apiName.upsertLead': 'Create or update lead',
+  'builtins.lobe-crm.title': 'CRM',
   'builtins.lobe-agent-documents.apiName.copyDocument': 'Copy document',
   'builtins.lobe-agent-documents.apiName.createDocument': 'Create document',
   'builtins.lobe-agent-documents.apiName.listDocuments': 'List documents',

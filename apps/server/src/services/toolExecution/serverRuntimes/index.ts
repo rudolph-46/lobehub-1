@@ -23,6 +23,7 @@ import { browserRuntime } from './browser';
 import { calculatorRuntime } from './calculator';
 import { cloudSandboxRuntime } from './cloudSandbox';
 import { credsRuntime } from './creds';
+import { crmRuntime } from './crm';
 import { goalRuntime } from './goal';
 import { goalSupervisorRuntime } from './goalSupervisor';
 import { groupAgentBuilderRuntime } from './groupAgentBuilder';
@@ -87,6 +88,7 @@ registerRuntimes([
   topicReferenceRuntime,
   userInteractionRuntime,
   credsRuntime,
+  crmRuntime,
   groupAgentBuilderRuntime,
   groupManagementRuntime,
   goalRuntime,
