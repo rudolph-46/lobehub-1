@@ -132,6 +132,14 @@ class AgentService {
   };
 
   /**
+   * Get an agent by catalogIdentifier stored in params
+   * @returns agent id if exists, null otherwise
+   */
+  getAgentByCatalogIdentifier = async (catalogIdentifier: string): Promise<string | null> => {
+    return lambdaClient.agent.getAgentByCatalogIdentifier.query({ catalogIdentifier });
+  };
+
+  /**
    * Create a new agent with session.
    * Automatically normalizes market agent config (handles model as object).
    */

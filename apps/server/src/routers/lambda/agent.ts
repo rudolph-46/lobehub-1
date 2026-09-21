@@ -587,6 +587,21 @@ export const agentRouter = router({
     }),
 
   /**
+   * Get an agent by the catalogIdentifier stored in params — dedupe key for
+   * installing a curated onboarding-catalog template twice.
+   * @returns agent id if exists, null otherwise
+   */
+  getAgentByCatalogIdentifier: agentProcedure
+    .input(
+      z.object({
+        catalogIdentifier: z.string(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      return ctx.agentModel.getAgentByCatalogIdentifier(input.catalogIdentifier);
+    }),
+
+  /**
    * Get an agent by marketIdentifier
    * @returns agent id if exists, null otherwise
    */

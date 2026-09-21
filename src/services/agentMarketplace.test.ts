@@ -6,22 +6,9 @@ const mocks = vi.hoisted(() => ({
   getOnboardingFull: vi.fn(),
 }));
 
-vi.mock('i18next', () => ({
-  default: {
-    language: 'en-US',
-    resolvedLanguage: 'zh',
-  },
-}));
-
-vi.mock('@/libs/trpc/client', () => ({
-  lambdaClient: {
-    market: {
-      agent: {
-        getOnboardingFull: {
-          query: mocks.getOnboardingFull,
-        },
-      },
-    },
+vi.mock('@/services/catalog', () => ({
+  catalogService: {
+    getOnboardingFull: mocks.getOnboardingFull,
   },
 }));
 
@@ -30,7 +17,7 @@ describe('fetchOnboardingAgentTemplates', () => {
     mocks.getOnboardingFull.mockReset();
   });
 
-  it('requests onboarding marketplace templates with the normalized current locale', async () => {
+  it('loads the instance catalog and normalizes each template', async () => {
     const signal = new AbortController().signal;
     mocks.getOnboardingFull.mockResolvedValue({
       engineering: [
@@ -44,7 +31,7 @@ describe('fetchOnboardingAgentTemplates', () => {
 
     const result = await fetchOnboardingAgentTemplates({ signal });
 
-    expect(mocks.getOnboardingFull).toHaveBeenCalledWith({ locale: 'zh-CN' }, { signal });
+    expect(mocks.getOnboardingFull).toHaveBeenCalledWith({ signal });
     expect(result).toEqual([
       {
         category: 'engineering',
@@ -53,5 +40,11 @@ describe('fetchOnboardingAgentTemplates', () => {
         title: 'Engineer',
       },
     ]);
+  });
+
+  it('returns an empty list when the catalog is empty', async () => {
+    mocks.getOnboardingFull.mockResolvedValue({});
+
+    expect(await fetchOnboardingAgentTemplates()).toEqual([]);
   });
 });

@@ -1,12 +1,26 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { agentService } from '@/services/agent';
-import { discoverService } from '@/services/discover';
-import { marketApiService } from '@/services/marketApi';
+import { catalogService } from '@/services/catalog';
 import { useAgentStore } from '@/store/agent';
 import { useHomeStore } from '@/store/home';
 
 import { installMarketplaceAgents } from './installMarketplaceAgents';
+
+const catalogDetail = (identifier: string) => ({
+  avatar: 'avatar',
+  backgroundColor: '#fff',
+  category: 'engineering',
+  config: {
+    openingMessage: 'hello',
+    params: { temperature: 0.4 },
+    plugins: ['lobe-web-browsing'],
+    systemRole: 'do things',
+  },
+  description: `desc-${identifier}`,
+  identifier,
+  title: `Title-${identifier}`,
+});
 
 describe('installMarketplaceAgents', () => {
   const createAgent = vi.fn();
@@ -24,116 +38,69 @@ describe('installMarketplaceAgents', () => {
     vi.spyOn(useHomeStore, 'getState').mockReturnValue({
       refreshAgentList,
     } as unknown as ReturnType<typeof useHomeStore.getState>);
-    vi.spyOn(discoverService, 'reportAgentEvent').mockResolvedValue(undefined);
+    vi.spyOn(agentService, 'getAgentByCatalogIdentifier').mockResolvedValue(null);
+    vi.spyOn(catalogService, 'getTemplateDetail').mockImplementation(async (identifier) =>
+      catalogDetail(identifier),
+    );
   });
 
-  it('sends a single batched fork call carrying every selected agent', async () => {
+  it('clones each selected template straight from the catalog — no market fork', async () => {
     const sourceIds = ['src-a', 'src-b', 'src-c'];
 
-    vi.spyOn(agentService, 'getAgentByForkedFromIdentifier').mockResolvedValue(null);
-    vi.spyOn(discoverService, 'getAssistantDetail').mockImplementation(
-      async ({ identifier }) =>
-        ({
-          avatar: 'avatar',
-          backgroundColor: '#fff',
-          category: 'engineering',
-          config: { params: {} } as any,
-          description: `desc-${identifier}`,
-          editorData: {},
-          identifier,
-          summary: `summary-${identifier}`,
-          tags: [],
-          title: `Title-${identifier}`,
-        }) as any,
-    );
-
-    const forkSpy = vi.spyOn(marketApiService, 'forkAgent').mockImplementation(async (items) =>
-      items.map((item) => ({
-        data: {
-          agent: {
-            createdAt: '2026-01-01',
-            forkedFromAgentId: 1,
-            id: 1,
-            identifier: item.identifier,
-            name: item.name ?? '',
-            ownerId: 1,
-            updatedAt: '2026-01-01',
-          },
-          source: { agentId: 1, identifier: item.sourceIdentifier, versionNumber: 1 },
-          version: { agentId: 1, createdAt: '2026-01-01', id: 1, versionNumber: 1 },
-        },
-        sourceIdentifier: item.sourceIdentifier,
-        success: true as const,
-      })),
-    );
-
     createAgent.mockImplementation(async ({ config }: any) => ({
-      agentId: `agent-${config.params.forkedFromIdentifier}`,
+      agentId: `agent-${config.params.catalogIdentifier}`,
     }));
 
     const result = await installMarketplaceAgents(sourceIds);
 
-    expect(forkSpy).toHaveBeenCalledTimes(1);
-    const [items] = forkSpy.mock.calls[0];
-    expect(items).toHaveLength(3);
-    expect(items.map((i) => i.sourceIdentifier)).toEqual(sourceIds);
-
     expect(createAgent).toHaveBeenCalledTimes(3);
-    expect(result.installedAgentIds).toHaveLength(3);
+    const [first] = createAgent.mock.calls[0];
+    expect(first.config.params.catalogIdentifier).toBe('src-a');
+    expect(first.config.title).toBe('Title-src-a');
+    expect(first.config.systemRole).toBe('do things');
+    expect(first.config.plugins).toEqual(['lobe-web-browsing']);
+
+    expect(result.installedAgentIds).toEqual(['agent-src-a', 'agent-src-b', 'agent-src-c']);
     expect(result.skippedAgentIds).toEqual([]);
+    expect(result.summaries.map((s) => s.templateId)).toEqual(sourceIds);
     expect(refreshAgentList).toHaveBeenCalledTimes(1);
   });
 
-  it('skips already-forked agents at the dedupe step', async () => {
+  it('skips already-installed templates at the dedupe step', async () => {
     const sourceIds = ['src-a', 'src-b', 'src-c'];
 
-    vi.spyOn(agentService, 'getAgentByForkedFromIdentifier').mockImplementation(async (id) =>
+    vi.spyOn(agentService, 'getAgentByCatalogIdentifier').mockImplementation(async (id) =>
       id === 'src-a' ? null : `existing-${id}`,
     );
-    vi.spyOn(discoverService, 'getAssistantDetail').mockImplementation(
-      async ({ identifier }) =>
-        ({
-          avatar: 'a',
-          backgroundColor: '#fff',
-          category: 'engineering',
-          config: { params: {} } as any,
-          description: 'd',
-          editorData: {},
-          identifier,
-          summary: 's',
-          tags: [],
-          title: 'T',
-        }) as any,
-    );
-    const forkSpy = vi.spyOn(marketApiService, 'forkAgent').mockImplementation(async (items) =>
-      items.map((item) => ({
-        data: {
-          agent: {
-            createdAt: '',
-            forkedFromAgentId: 1,
-            id: 1,
-            identifier: item.identifier,
-            name: item.name ?? '',
-            ownerId: 1,
-            updatedAt: '',
-          },
-          source: { agentId: 1, identifier: item.sourceIdentifier, versionNumber: 1 },
-          version: { agentId: 1, createdAt: '', id: 1, versionNumber: 1 },
-        },
-        sourceIdentifier: item.sourceIdentifier,
-        success: true as const,
-      })),
-    );
     createAgent.mockImplementation(async ({ config }: any) => ({
-      agentId: `agent-${config.params.forkedFromIdentifier}`,
+      agentId: `agent-${config.params.catalogIdentifier}`,
     }));
 
     const result = await installMarketplaceAgents(sourceIds);
 
-    expect(forkSpy).toHaveBeenCalledTimes(1);
-    const [items] = forkSpy.mock.calls[0];
-    expect(items.map((i) => i.sourceIdentifier)).toEqual(['src-a']);
+    expect(createAgent).toHaveBeenCalledTimes(1);
     expect(result.skippedAgentIds).toEqual(['src-b', 'src-c']);
     expect(result.installedAgentIds).toEqual(['agent-src-a']);
+    // Summaries keep the original selection order and mark skips.
+    expect(result.summaries.find((s) => s.templateId === 'src-b')).toMatchObject({
+      skipped: true,
+    });
+  });
+
+  it('warns and skips a template the catalog does not know', async () => {
+    vi.spyOn(catalogService, 'getTemplateDetail').mockRejectedValueOnce(
+      new Error('Template introuvable'),
+    );
+    createAgent.mockImplementation(async ({ config }: any) => ({
+      agentId: `agent-${config.params.catalogIdentifier}`,
+    }));
+
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const result = await installMarketplaceAgents(['ghost-a', 'known-b']);
+
+    expect(createAgent).toHaveBeenCalledTimes(1);
+    expect(result.installedAgentIds).toEqual(['agent-known-b']);
+    warnSpy.mockRestore();
   });
 });

@@ -1386,6 +1386,23 @@ export class AgentModel {
     return result?.id ?? null;
   };
 
+  /**
+   * Get an agent by the catalogIdentifier stored in params — the dedupe key
+   * for installing a curated onboarding-catalog template twice.
+   * @returns agent id if exists, null otherwise
+   */
+  getAgentByCatalogIdentifier = async (catalogIdentifier: string): Promise<string | null> => {
+    const result = await this.db.query.agents.findFirst({
+      columns: { id: true },
+      orderBy: (agents, { desc }) => [desc(agents.updatedAt)],
+      where: and(
+        this.ownership(),
+        sql`${agents.params}->>'catalogIdentifier' = ${catalogIdentifier}`,
+      ),
+    });
+    return result?.id ?? null;
+  };
+
   updateConfig = async (agentId: string, input: PartialDeep<AgentItem> | undefined | null) => {
     if (!input || Object.keys(input).length === 0) return;
 

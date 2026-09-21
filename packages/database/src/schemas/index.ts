@@ -2,6 +2,7 @@ export * from './acceptanceComment';
 export * from './acceptanceFlow';
 export * from './agent';
 export * from './agentBotProvider';
+export * from './agentCatalog';
 export * from './agentCronJob';
 export * from './agentDocuments';
 export * from './agentEvals';

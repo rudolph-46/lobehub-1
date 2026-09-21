@@ -43,6 +43,7 @@ import { apiKeyRouter } from './apiKey';
 import { asrRouter } from './asr';
 import { botMessageRouter } from './botMessage';
 import { briefRouter } from './brief';
+import { catalogRouter } from './catalog';
 import { changelogRouter } from './changelog';
 import { chunkRouter } from './chunk';
 import { comfyuiRouter } from './comfyui';
@@ -121,6 +122,7 @@ export const lambdaRouter = router({
   agentSignal: agentSignalRouter,
   changelog: changelogRouter,
   brief: briefRouter,
+  catalog: catalogRouter,
   aiAgent: aiAgentRouter,
   aiChat: aiChatRouter,
   aiModel: aiModelRouter,

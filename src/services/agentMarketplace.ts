@@ -4,19 +4,15 @@ import {
   normalizeAgentTemplate,
   type RawAgentTemplate,
 } from '@lobechat/builtin-tool-web-onboarding/agentMarketplace';
-import i18next from 'i18next';
 
-import { lambdaClient } from '@/libs/trpc/client';
-import { normalizeLocale } from '@/locales/resources';
+import { catalogService } from '@/services/catalog';
 
-const resolveMarketplaceLocale = () =>
-  normalizeLocale(i18next.resolvedLanguage || i18next.language || globalThis.navigator?.language);
-
+/**
+ * Serves the onboarding picker from the instance's own agent catalog
+ * (`agent_catalog` table) — the marketplace is never contacted.
+ */
 export const fetchOnboardingAgentTemplates: AgentTemplateFetcher = async (options) => {
-  const data = await lambdaClient.market.agent.getOnboardingFull.query(
-    { locale: resolveMarketplaceLocale() },
-    { signal: options?.signal },
-  );
+  const data = await catalogService.getOnboardingFull({ signal: options?.signal });
   if (!data || typeof data !== 'object') return [];
 
   const templates: AgentTemplate[] = [];

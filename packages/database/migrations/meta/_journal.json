@@ -1176,6 +1176,13 @@
       "when": 1789862577737,
       "tag": "0167_crm",
       "breakpoints": true
+    },
+    {
+      "idx": 168,
+      "version": "7",
+      "when": 1789946516974,
+      "tag": "0168_agent_catalog",
+      "breakpoints": true
     }
   ],
   "version": "6"
