@@ -1040,6 +1040,7 @@ export default {
   'settingAgent.agentTools.removeOwnedConfirm':
     'Delete this agent-exclusive connector? Its credentials will be removed.',
   'settingAgent.agentTools.tabAgent': 'Agent Tools',
+  'settingAgent.agentTools.tabSkills': 'Skills',
   'settingAgent.agentTools.tabUser': 'User Tools',
   'settingAgent.agentTools.tabWorkspace': 'Workspace Tools',
   'settingAgent.devicePolicy.noPublicDevice': 'No public devices',

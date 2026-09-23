@@ -15,7 +15,7 @@ import { getVisibleProfileToolIds } from '@/features/ProfileEditor/profileToolVi
 import { useAgentStore } from '@/store/agent';
 import { agentSelectors } from '@/store/agent/selectors';
 import { useToolStore } from '@/store/tool';
-import { builtinToolSelectors } from '@/store/tool/selectors';
+import { agentSkillsSelectors, builtinToolSelectors } from '@/store/tool/selectors';
 import { connectorSelectors } from '@/store/tool/slices/connector';
 
 interface Props extends AgentToolProps {
@@ -67,10 +67,25 @@ const UserToolsSection = memo<Props>(
       () => new Set(nonProfileConfigurableBuiltinToolIds),
       [nonProfileConfigurableBuiltinToolIds],
     );
-    const userToolCount = getVisibleProfileToolIds(getActivePluginIds(config?.plugins), {
+    const installedBuiltinSkills = useToolStore(
+      builtinToolSelectors.installedBuiltinSkills,
+      isEqual,
+    );
+    const marketAgentSkills = useToolStore(agentSkillsSelectors.getMarketAgentSkills, isEqual);
+    const userAgentSkills = useToolStore(agentSkillsSelectors.getUserAgentSkills, isEqual);
+    const skillIdentifiers = useMemo(() => {
+      const ids = new Set<string>();
+      for (const skill of installedBuiltinSkills) ids.add(skill.identifier);
+      for (const skill of marketAgentSkills) ids.add(skill.identifier);
+      for (const skill of userAgentSkills) ids.add(skill.identifier);
+      return ids;
+    }, [installedBuiltinSkills, marketAgentSkills, userAgentSkills]);
+    const visibleProfileToolIds = getVisibleProfileToolIds(getActivePluginIds(config?.plugins), {
       agentConnectorIdentifiers,
       nonConfigurableBuiltinToolIdentifiers: nonProfileConfigurableBuiltinToolIdentifiers,
-    }).length;
+    });
+    const skillCount = visibleProfileToolIds.filter((id) => skillIdentifiers.has(id)).length;
+    const userToolCount = visibleProfileToolIds.length - skillCount;
     // In a workspace, this section's base tools are the WORKSPACE dimension
     // (`connector.list` is workspace-scoped), not the caller's personal tools —
     // label it so the user knows the tools are shared workspace-scoped, not
@@ -126,16 +141,32 @@ const UserToolsSection = memo<Props>(
     }
 
     return (
-      <Flexbox gap={8}>
-        <Text style={{ fontSize: 12, fontWeight: 500 }} type={'secondary'}>
-          {baseToolsLabel} · {userToolCount}
-        </Text>
-        <SharedAgentTool
-          {...toolProps}
-          excludeAgentConnectors
-          agentId={agentId}
-          showAuthor={!!activeWorkspaceId}
-        />
+      <Flexbox gap={12}>
+        <Flexbox gap={8}>
+          <Text style={{ fontSize: 12, fontWeight: 500 }} type={'secondary'}>
+            {t('settingAgent.agentTools.tabSkills')} · {skillCount}
+          </Text>
+          <SharedAgentTool
+            {...toolProps}
+            excludeAgentConnectors
+            agentId={agentId}
+            profileToolKind={'skill'}
+            showAuthor={!!activeWorkspaceId}
+          />
+        </Flexbox>
+
+        <Flexbox gap={8}>
+          <Text style={{ fontSize: 12, fontWeight: 500 }} type={'secondary'}>
+            {baseToolsLabel} · {userToolCount}
+          </Text>
+          <SharedAgentTool
+            {...toolProps}
+            excludeAgentConnectors
+            agentId={agentId}
+            profileToolKind={'tool'}
+            showAuthor={!!activeWorkspaceId}
+          />
+        </Flexbox>
       </Flexbox>
     );
   },

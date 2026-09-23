@@ -55,7 +55,7 @@ interface AgentProfileTabsProps {
  * URL rather than holding local state: deep links and back/forward keep working.
  */
 const AgentProfileTabs = memo<AgentProfileTabsProps>(({ active, agentId }) => {
-  const { t } = useTranslation(['chat', 'common', 'spend']);
+  const { t } = useTranslation(['chat', 'common', 'spend', 'topic']);
   const navigate = useWorkspaceAwareNavigate();
 
   const heterogeneousProviderType = useAgentStore(
@@ -83,6 +83,8 @@ const AgentProfileTabs = memo<AgentProfileTabsProps>(({ active, agentId }) => {
           profile: t('tab.profileBasic'),
           share: t('share', { ns: 'common' }),
           statistics: t('usageStats.title', { ns: 'spend' }),
+          tasks: t('tab.tasks'),
+          topics: t('management.title', { ns: 'topic' }),
         },
         shareSupported: shareVisible === true,
       }),

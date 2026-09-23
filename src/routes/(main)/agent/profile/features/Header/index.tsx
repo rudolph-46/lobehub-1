@@ -28,7 +28,10 @@ import { useAgentShareSupported } from '@/business/client/useAgentShareSupported
 import { DESKTOP_HEADER_ICON_SMALL_SIZE } from '@/const/layoutTokens';
 import AgentBreadcrumb from '@/features/AgentBreadcrumb';
 import { useAgentMarketSubmission } from '@/features/AgentMarketSubmission/useAgentMarketSubmission';
-import AgentProfileTabs, { AGENT_PROFILE_TABS_CENTER_STYLE } from '@/features/AgentProfileTabs';
+import AgentProfileTabs, {
+  AGENT_PROFILE_TABS_CENTER_STYLE,
+  type AgentProfileTab,
+} from '@/features/AgentProfileTabs';
 import NavHeader from '@/features/NavHeader';
 import { formatPageEditorInfoTime } from '@/features/PageEditor/formatPageEditorInfoTime';
 import AccessLevelTag from '@/features/ResourcePermission/AccessLevelTag';
@@ -103,7 +106,11 @@ const buildAgentProfileMarkdown = (params: {
   return `${sections.join('\n\n')}\n`;
 };
 
-const Header = memo(() => {
+interface HeaderProps {
+  activeTab?: AgentProfileTab;
+}
+
+const Header = memo<HeaderProps>(({ activeTab = 'profile' }) => {
   const { i18n, t } = useTranslation(['setting', 'chat', 'file', 'common', 'agent']);
   const dateLocale = i18n?.resolvedLanguage || i18n?.language;
   const navigate = useWorkspaceAwareNavigate();
@@ -449,7 +456,7 @@ const Header = memo(() => {
         },
       }}
     >
-      {activeAgentId && <AgentProfileTabs active={'profile'} agentId={activeAgentId} />}
+      {activeAgentId && <AgentProfileTabs active={activeTab} agentId={activeAgentId} />}
     </NavHeader>
   );
 });

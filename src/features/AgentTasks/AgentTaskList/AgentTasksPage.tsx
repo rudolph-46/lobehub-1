@@ -83,6 +83,7 @@ interface AgentTasksPageProps {
    * shows tasks across all agents.
    */
   agentId?: string;
+  hideHeader?: boolean;
   /** When provided, shows the complete task workspace scoped to one project. */
   projectId?: string;
 }
@@ -165,7 +166,7 @@ export const resolveTaskCollectionView = (
   viewMode: TaskViewMode,
 ): 'board' | 'list' => (collection !== 'scheduled' && viewMode === 'kanban' ? 'board' : 'list');
 
-const AgentTasksPage = memo<AgentTasksPageProps>(({ agentId, projectId }) => {
+const AgentTasksPage = memo<AgentTasksPageProps>(({ agentId, hideHeader, projectId }) => {
   const { t } = useTranslation('chat');
   const navigate = useWorkspaceAwareNavigate();
   const isMobile = useIsMobile();
@@ -353,7 +354,7 @@ const AgentTasksPage = memo<AgentTasksPageProps>(({ agentId, projectId }) => {
 
   const headerLeft = (
     <Flexbox horizontal align={'center'} gap={8}>
-      {headerVisibility.showBreadcrumb && <Breadcrumb />}
+      {headerVisibility.showBreadcrumb && !agentId && <Breadcrumb />}
       <TabsRoot size={'small'} value={collection} onValueChange={handleCollectionChange}>
         <TabsList>
           <TabsIndicator />
@@ -376,43 +377,45 @@ const AgentTasksPage = memo<AgentTasksPageProps>(({ agentId, projectId }) => {
 
   return (
     <Flexbox flex={1} height={'100%'}>
-      <NavHeader
-        left={headerLeft}
-        right={
-          <Flexbox horizontal align={'center'} gap={4}>
-            {isOrdinaryCollection && !agentId && !projectId && <TaskListVisibilityFilter />}
-            {isOrdinaryCollection && (inlineCollapsed || viewMode === 'kanban') && (
-              <ActionIcon
-                disabled={createActionBehavior.disabled}
-                icon={Plus}
-                size={DESKTOP_HEADER_ICON_SMALL_SIZE}
-                title={createActionBehavior.disabled ? reason : undefined}
-                onClick={handleCreateTask}
-              />
-            )}
-            {!isScheduledCollection && headerVisibility.showViewOptions && (
-              <TasksGroupConfig
-                options={viewOptions}
-                pinnedOptions={isMineCollection ? PAGINATED_COLLECTION_PINNED_OPTIONS : undefined}
-                setOptions={setViewOptions}
-              />
-            )}
-            {headerVisibility.showTaskAgentPanelToggle && (
-              <ToggleRightPanelButton
-                hideWhenExpanded
-                expand={showTaskAgentPanel}
-                onToggle={() => toggleTaskAgentPanel()}
-              />
-            )}
-          </Flexbox>
-        }
-        styles={{
-          left: {
-            paddingLeft: 4,
-            gap: 8,
-          },
-        }}
-      />
+      {!hideHeader && (
+        <NavHeader
+          left={headerLeft}
+          right={
+            <Flexbox horizontal align={'center'} gap={4}>
+              {isOrdinaryCollection && !agentId && !projectId && <TaskListVisibilityFilter />}
+              {isOrdinaryCollection && (inlineCollapsed || viewMode === 'kanban') && (
+                <ActionIcon
+                  disabled={createActionBehavior.disabled}
+                  icon={Plus}
+                  size={DESKTOP_HEADER_ICON_SMALL_SIZE}
+                  title={createActionBehavior.disabled ? reason : undefined}
+                  onClick={handleCreateTask}
+                />
+              )}
+              {!isScheduledCollection && headerVisibility.showViewOptions && (
+                <TasksGroupConfig
+                  options={viewOptions}
+                  pinnedOptions={isMineCollection ? PAGINATED_COLLECTION_PINNED_OPTIONS : undefined}
+                  setOptions={setViewOptions}
+                />
+              )}
+              {headerVisibility.showTaskAgentPanelToggle && (
+                <ToggleRightPanelButton
+                  hideWhenExpanded
+                  expand={showTaskAgentPanel}
+                  onToggle={() => toggleTaskAgentPanel()}
+                />
+              )}
+            </Flexbox>
+          }
+          styles={{
+            left: {
+              paddingLeft: 4,
+              gap: 8,
+            },
+          }}
+        />
+      )}
       {isMineBoard ? (
         <Flexbox flex={1} style={{ overflowX: 'auto', overflowY: 'hidden' }}>
           <KanbanBoard

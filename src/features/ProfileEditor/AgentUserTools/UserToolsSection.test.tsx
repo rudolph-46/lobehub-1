@@ -78,7 +78,9 @@ const renderSection = () =>
     />,
   );
 
-const labelText = () => screen.getByTestId('label').textContent;
+const labelTexts = () => screen.getAllByTestId('label').map((element) => element.textContent ?? '');
+const userToolsLabelText = () =>
+  labelTexts().find((text) => text.includes('settingAgent.agentTools.tabWorkspace')) ?? '';
 
 describe('UserToolsSection — Workspace/User tool count', () => {
   beforeEach(() => {
@@ -98,7 +100,7 @@ describe('UserToolsSection — Workspace/User tool count', () => {
 
     renderSection();
 
-    expect(labelText()).toContain('· 0');
+    expect(userToolsLabelText()).toContain('· 0');
   });
 
   it('still counts a genuine base pinned tool that is not an agent connector', () => {
@@ -114,7 +116,7 @@ describe('UserToolsSection — Workspace/User tool count', () => {
 
     renderSection();
 
-    expect(labelText()).toContain('· 1');
+    expect(userToolsLabelText()).toContain('· 1');
   });
 
   it('does not count Web Browsing even when a legacy plugin entry is pinned', () => {
@@ -140,7 +142,7 @@ describe('UserToolsSection — Workspace/User tool count', () => {
 
     renderSection();
 
-    expect(labelText()).toContain('· 1');
+    expect(userToolsLabelText()).toContain('· 1');
   });
 
   it('does not count pinned Skill Store in auto activation mode', () => {
@@ -164,7 +166,7 @@ describe('UserToolsSection — Workspace/User tool count', () => {
 
     renderSection();
 
-    expect(labelText()).toContain('· 0');
+    expect(userToolsLabelText()).toContain('· 0');
   });
 
   it('counts pinned Skill Store in manual activation mode', () => {
@@ -188,6 +190,6 @@ describe('UserToolsSection — Workspace/User tool count', () => {
 
     renderSection();
 
-    expect(labelText()).toContain('· 1');
+    expect(userToolsLabelText()).toContain('· 1');
   });
 });

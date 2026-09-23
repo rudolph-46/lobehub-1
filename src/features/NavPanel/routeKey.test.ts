@@ -12,6 +12,8 @@ describe('resolveNavPanelKey', () => {
     ['/lobe-team/task/task-1', 'lobe-team', 'home'],
     ['/agent/agent-1', null, 'agent'],
     ['/lobe-team/agent/agent-1', 'lobe-team', 'agent'],
+    ['/agent/agent-1/profile', null, 'home'],
+    ['/lobe-team/agent/agent-1/profile', 'lobe-team', 'home'],
     ['/agent/agent-1/docs', null, 'agent-docs'],
     ['/agent/agent-1/docs/docs-1', null, 'agent-docs'],
     ['/lobe-team/agent/agent-1/docs/docs-1', 'lobe-team', 'agent-docs'],

@@ -1,6 +1,6 @@
 import urlJoin from 'url-join';
 
-export type AgentProfileTab = 'channel' | 'profile' | 'share' | 'statistics';
+export type AgentProfileTab = 'channel' | 'profile' | 'share' | 'statistics' | 'tasks' | 'topics';
 
 export interface AgentProfileTabOption {
   label: string;
@@ -17,8 +17,13 @@ export const supportsMessageChannels = (heterogeneousProviderType?: string) =>
   heterogeneousProviderType === 'claude-code' ||
   heterogeneousProviderType === 'codex';
 
-export const buildAgentProfileTabPath = (agentId: string, tab: AgentProfileTab) =>
-  urlJoin('/agent', agentId, tab);
+export const buildAgentProfileTabPath = (agentId: string, tab: AgentProfileTab) => {
+  if (tab === 'tasks' || tab === 'topics') {
+    return `${urlJoin('/agent', agentId, 'profile')}?tab=${tab}`;
+  }
+
+  return urlJoin('/agent', agentId, tab);
+};
 
 /**
  * Which segments the profile-group switcher shows.
@@ -55,6 +60,8 @@ export const buildAgentProfileTabOptions = ({
   return [
     showProfile ? { label: labels.profile, value: 'profile' as const } : null,
     showChannel ? { label: labels.channel, value: 'channel' as const } : null,
+    { label: labels.topics, value: 'topics' as const },
+    { label: labels.tasks, value: 'tasks' as const },
     { label: labels.statistics, value: 'statistics' as const },
     showShare ? { label: labels.share, value: 'share' as const } : null,
   ].filter((option) => !!option);

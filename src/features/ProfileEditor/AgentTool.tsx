@@ -69,6 +69,12 @@ export interface AgentToolProps {
    */
   filterAvailableInWeb?: boolean;
   /**
+   * Restrict this surface to either agent skills or non-skill user tools.
+   * Undefined keeps the historical mixed list for consumers that still need a
+   * single compact tool surface.
+   */
+  profileToolKind?: 'skill' | 'tool';
+  /**
    * Show an "authorized by X" avatar on each connector chip. Set by the
    * two-section agent profile in a workspace so a teammate can see whose
    * credentials each shared tool runs under. Off elsewhere (personal mode has a
@@ -89,6 +95,7 @@ const AgentTool = memo<AgentToolProps>(
     filterAvailableInWeb = false,
     useAllMetaList = false,
     excludeAgentConnectors = false,
+    profileToolKind,
     showAuthor = false,
   }) => {
     const { t } = useTranslation('setting');
@@ -510,12 +517,8 @@ const AgentTool = memo<AgentToolProps>(
       [userAgentSkills, isToolEnabled, handleToggleTool, t],
     );
 
-    // Merge Builtin Agent Skills, builtin tools, LobeHub Skill Providers, and Composio servers
-    const builtinItems = useMemo(
+    const builtinToolItems = useMemo(
       () => [
-        // 1. Builtin Agent Skills
-        ...builtinAgentSkillItems,
-        // 2. Original builtin tools
         ...filteredBuiltinList.map((item) => ({
           icon: (
             <Avatar
@@ -557,13 +560,10 @@ const AgentTool = memo<AgentToolProps>(
             />
           ),
         })),
-        // 3. LobeHub Skill Providers
         ...lobehubSkillItems,
-        // 4. Composio servers
         ...composioServerItems,
       ],
       [
-        builtinAgentSkillItems,
         filteredBuiltinList,
         composioServerItems,
         lobehubSkillItems,
@@ -686,14 +686,38 @@ const AgentTool = memo<AgentToolProps>(
       [userAgentSkillItems, customPluginItems, customConnectorItems],
     );
 
+    const visibleLobehubItems = useMemo(() => {
+      if (profileToolKind === 'skill') return builtinAgentSkillItems;
+      if (profileToolKind === 'tool') return builtinToolItems;
+      return [...builtinAgentSkillItems, ...builtinToolItems];
+    }, [builtinAgentSkillItems, builtinToolItems, profileToolKind]);
+
+    const visibleCommunityItems = useMemo(() => {
+      if (profileToolKind === 'skill') return marketAgentSkillItems;
+      if (profileToolKind === 'tool') return communityPluginItems;
+      return communityGroupChildren;
+    }, [communityGroupChildren, communityPluginItems, marketAgentSkillItems, profileToolKind]);
+
+    const visibleCustomItems = useMemo(() => {
+      if (profileToolKind === 'skill') return userAgentSkillItems;
+      if (profileToolKind === 'tool') return [...customPluginItems, ...customConnectorItems];
+      return customGroupChildren;
+    }, [
+      customConnectorItems,
+      customGroupChildren,
+      customPluginItems,
+      profileToolKind,
+      userAgentSkillItems,
+    ]);
+
     // All tab items (marketplace tab)
     const allTabItems: ItemType[] = useMemo(
       () => [
         // LobeHub group
-        ...(builtinItems.length > 0
+        ...(visibleLobehubItems.length > 0
           ? [
               {
-                children: builtinItems,
+                children: visibleLobehubItems,
                 key: 'lobehub',
                 label: t('skillStore.tabs.lobehub'),
                 type: 'group' as const,
@@ -701,10 +725,10 @@ const AgentTool = memo<AgentToolProps>(
             ]
           : []),
         // Community group (Market Agent Skills + community plugins)
-        ...(communityGroupChildren.length > 0
+        ...(visibleCommunityItems.length > 0
           ? [
               {
-                children: communityGroupChildren,
+                children: visibleCommunityItems,
                 key: 'community',
                 label: t('skillStore.tabs.community'),
                 type: 'group' as const,
@@ -712,10 +736,10 @@ const AgentTool = memo<AgentToolProps>(
             ]
           : []),
         // Custom group (User Agent Skills + custom plugins)
-        ...(customGroupChildren.length > 0
+        ...(visibleCustomItems.length > 0
           ? [
               {
-                children: customGroupChildren,
+                children: visibleCustomItems,
                 key: 'custom',
                 label: t('skillStore.tabs.custom'),
                 type: 'group' as const,
@@ -723,7 +747,7 @@ const AgentTool = memo<AgentToolProps>(
             ]
           : []),
       ],
-      [builtinItems, communityGroupChildren, customGroupChildren, t],
+      [visibleCommunityItems, visibleCustomItems, visibleLobehubItems, t],
     );
 
     const button = (
@@ -823,11 +847,22 @@ const AgentTool = memo<AgentToolProps>(
     // managed entries remain untouched in config for compatibility with other
     // flows, but do not inflate this section's count or render misleading chips.
     const allEnabledTools = useMemo(() => {
-      return getVisibleProfileToolIds(plugins, {
+      const visibleIds = getVisibleProfileToolIds(plugins, {
         agentConnectorIdentifiers,
         nonConfigurableBuiltinToolIdentifiers: nonProfileConfigurableBuiltinToolIdentifiers,
       });
-    }, [plugins, agentConnectorIdentifiers, nonProfileConfigurableBuiltinToolIdentifiers]);
+      if (!profileToolKind) return visibleIds;
+
+      return visibleIds.filter((id) =>
+        profileToolKind === 'skill' ? allSkillIdentifiers.has(id) : !allSkillIdentifiers.has(id),
+      );
+    }, [
+      plugins,
+      agentConnectorIdentifiers,
+      nonProfileConfigurableBuiltinToolIdentifiers,
+      profileToolKind,
+      allSkillIdentifiers,
+    ]);
 
     return (
       <>

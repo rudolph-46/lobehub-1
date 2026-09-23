@@ -38,7 +38,11 @@ import {
 // triggers `loadMoreTopics` which appends another page into `topicDataMap`.
 const PAGE_SIZE = 30;
 
-const AgentTopicManager = memo(() => {
+interface AgentTopicManagerProps {
+  hideHeader?: boolean;
+}
+
+const AgentTopicManager = memo<AgentTopicManagerProps>(({ hideHeader }) => {
   const { t } = useTranslation('topic');
   const activeAgentId = useChatStore((s) => s.activeAgentId);
   // Use the management page's dedicated SWR pipeline so the heavier
@@ -213,7 +217,7 @@ const AgentTopicManager = memo(() => {
 
   return (
     <Flexbox flex={1} height={'100%'} style={{ overflow: 'hidden' }}>
-      <Header agentId={activeAgentId} />
+      {!hideHeader && <Header agentId={activeAgentId} />}
       <div
         ref={scrollContainerRef}
         style={{

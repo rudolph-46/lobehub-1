@@ -5,7 +5,7 @@ import { Search } from 'lucide-react';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import AgentBreadcrumb from '@/features/AgentBreadcrumb';
+import AgentProfileTabs, { AGENT_PROFILE_TABS_CENTER_STYLE } from '@/features/AgentProfileTabs';
 import NavHeader from '@/features/NavHeader';
 
 import { useTopicsViewStore } from './store';
@@ -21,7 +21,6 @@ const Header = memo<HeaderProps>(({ agentId }) => {
 
   return (
     <NavHeader
-      left={<AgentBreadcrumb agentId={agentId} title={t('management.title')} />}
       right={
         <Input
           placeholder={t('searchPlaceholder')}
@@ -33,10 +32,12 @@ const Header = memo<HeaderProps>(({ agentId }) => {
         />
       }
       styles={{
-        left: { paddingInlineStart: 8 },
+        center: AGENT_PROFILE_TABS_CENTER_STYLE,
         right: { flex: 1, maxWidth: 400 },
       }}
-    />
+    >
+      <AgentProfileTabs active={'topics'} agentId={agentId} />
+    </NavHeader>
   );
 });
 

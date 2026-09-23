@@ -3,12 +3,15 @@
 import { Flexbox } from '@lobehub/ui';
 import { type FC } from 'react';
 import { memo, Suspense } from 'react';
-import { useParams } from 'react-router';
+import { useParams, useSearchParams } from 'react-router';
 
 import AsyncBoundary from '@/components/AsyncBoundary';
 import { delayed } from '@/components/Skeleton/Delayed';
 import ProfileSkeleton from '@/components/Skeleton/Profile';
 import AgentBuilder from '@/features/AgentBuilder';
+import type { AgentProfileTab } from '@/features/AgentProfileTabs';
+import { AgentTasksPage } from '@/features/AgentTasks';
+import AgentTopicManager from '@/features/AgentTopicManager';
 import ResourceConfigAccessGate from '@/features/ResourcePermission/ResourceConfigAccessGate';
 import WideScreenContainer from '@/features/WideScreenContainer';
 import { usePermission } from '@/hooks/usePermission';
@@ -36,7 +39,18 @@ const styles = StyleSheet.create({
   },
 });
 
-const ProfileArea = memo(() => {
+const getProfilePageTab = (
+  tab: string | null,
+): Extract<AgentProfileTab, 'profile' | 'tasks' | 'topics'> =>
+  tab === 'tasks' || tab === 'topics' ? tab : 'profile';
+
+interface ProfileAreaProps {
+  agentId?: string;
+}
+
+const ProfileArea = memo<ProfileAreaProps>(({ agentId }) => {
+  const [searchParams] = useSearchParams();
+  const activeTab = getProfilePageTab(searchParams.get('tab'));
   const editor = useProfileStore((s) => s.editor);
   const isAgentConfigLoading = useAgentStore(agentSelectors.isAgentConfigLoading);
   // `isAgentConfigLoading` is data-presence ("no config in the map yet"), so a
@@ -47,6 +61,7 @@ const ProfileArea = memo(() => {
   const retryAgentConfigFetch = useAgentStore((s) => s.retryAgentConfigFetch);
   const { allowed: canEdit } = usePermission('edit_own_content');
   const handleContentClick = useClickToFocusEditor(editor, canEdit);
+  const isProfileTab = activeTab === 'profile';
 
   return (
     <>
@@ -66,18 +81,24 @@ const ProfileArea = memo(() => {
           loading={<ProfileSkeleton />}
           onRetry={() => retryAgentConfigFetch()}
         >
-          <Header />
-          <Flexbox
-            horizontal
-            height={'100%'}
-            style={{ ...styles.contentWrapper, cursor: canEdit ? 'text' : 'default' }}
-            width={'100%'}
-            onClick={handleContentClick}
-          >
-            <WideScreenContainer>
-              <ProfileEditor />
-            </WideScreenContainer>
-          </Flexbox>
+          <Header activeTab={activeTab} />
+          {isProfileTab ? (
+            <Flexbox
+              horizontal
+              height={'100%'}
+              style={{ ...styles.contentWrapper, cursor: canEdit ? 'text' : 'default' }}
+              width={'100%'}
+              onClick={handleContentClick}
+            >
+              <WideScreenContainer>
+                <ProfileEditor />
+              </WideScreenContainer>
+            </Flexbox>
+          ) : activeTab === 'topics' ? (
+            <AgentTopicManager hideHeader />
+          ) : (
+            <AgentTasksPage hideHeader agentId={agentId} />
+          )}
         </AsyncBoundary>
       </Flexbox>
       {/* Mounted unconditionally (not behind the config-loading gate) so the lock
@@ -113,7 +134,7 @@ const AgentProfile: FC = () => {
       >
         <ProfileProvider>
           <Flexbox horizontal height={'100%'} width={'100%'}>
-            <ProfileArea />
+            <ProfileArea agentId={aid} />
             <AgentBuilderSlot />
           </Flexbox>
         </ProfileProvider>

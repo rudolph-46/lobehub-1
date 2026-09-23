@@ -11,6 +11,8 @@ const labels = {
   profile: 'tab.profile',
   share: 'share',
   statistics: 'usageStats.title',
+  tasks: 'tab.tasks',
+  topics: 'management.title',
 };
 
 describe('supportsMessageChannels', () => {
@@ -29,6 +31,11 @@ describe('buildAgentProfileTabPath', () => {
   it('builds the sub-route of the agent', () => {
     expect(buildAgentProfileTabPath('agt_1', 'statistics')).toBe('/agent/agt_1/statistics');
   });
+
+  it('keeps topics and tasks inside the profile page tabs', () => {
+    expect(buildAgentProfileTabPath('agt_1', 'topics')).toBe('/agent/agt_1/profile?tab=topics');
+    expect(buildAgentProfileTabPath('agt_1', 'tasks')).toBe('/agent/agt_1/profile?tab=tasks');
+  });
 });
 
 describe('buildAgentProfileTabOptions', () => {
@@ -44,6 +51,8 @@ describe('buildAgentProfileTabOptions', () => {
     expect(options.map((option) => option.value)).toEqual([
       'profile',
       'channel',
+      'topics',
+      'tasks',
       'statistics',
       'share',
     ]);
@@ -58,10 +67,15 @@ describe('buildAgentProfileTabOptions', () => {
       shareSupported: false,
     });
 
-    expect(options.map((option) => option.value)).toEqual(['profile', 'statistics']);
+    expect(options.map((option) => option.value)).toEqual([
+      'profile',
+      'topics',
+      'tasks',
+      'statistics',
+    ]);
   });
 
-  it('drops the config tabs for a member without edit access', () => {
+  it('drops the gated config tabs for a member without edit access', () => {
     const options = buildAgentProfileTabOptions({
       active: 'statistics',
       canConfigure: false,
@@ -70,7 +84,7 @@ describe('buildAgentProfileTabOptions', () => {
       shareSupported: true,
     });
 
-    expect(options.map((option) => option.value)).toEqual(['statistics']);
+    expect(options.map((option) => option.value)).toEqual(['topics', 'tasks', 'statistics']);
   });
 
   it('keeps the tab owned by the current page even when it is gated off', () => {
@@ -82,7 +96,12 @@ describe('buildAgentProfileTabOptions', () => {
       shareSupported: false,
     });
 
-    expect(options.map((option) => option.value)).toEqual(['channel', 'statistics']);
+    expect(options.map((option) => option.value)).toEqual([
+      'channel',
+      'topics',
+      'tasks',
+      'statistics',
+    ]);
   });
 
   it('drops share when the agent cannot be shared at all', () => {
@@ -94,7 +113,13 @@ describe('buildAgentProfileTabOptions', () => {
       shareSupported: false,
     });
 
-    expect(options.map((option) => option.value)).toEqual(['profile', 'channel', 'statistics']);
+    expect(options.map((option) => option.value)).toEqual([
+      'profile',
+      'channel',
+      'topics',
+      'tasks',
+      'statistics',
+    ]);
   });
 
   it('keeps share when it owns the current page even though it is gated off', () => {
@@ -106,6 +131,11 @@ describe('buildAgentProfileTabOptions', () => {
       shareSupported: false,
     });
 
-    expect(options.map((option) => option.value)).toEqual(['statistics', 'share']);
+    expect(options.map((option) => option.value)).toEqual([
+      'topics',
+      'tasks',
+      'statistics',
+      'share',
+    ]);
   });
 });

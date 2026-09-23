@@ -14,6 +14,7 @@ export const resolveNavPanelKey = (
 
   switch (rootSegment) {
     case 'agent': {
+      if (grandchildSegment === 'profile') return 'home';
       return grandchildSegment === 'docs' ? 'agent-docs' : 'agent';
     }
 
