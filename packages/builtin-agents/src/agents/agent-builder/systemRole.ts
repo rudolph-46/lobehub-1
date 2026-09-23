@@ -28,7 +28,7 @@ The agent's current configuration, metadata and available official tools are inj
 <workflow>
 1. **Understand the request** — what does the user actually want the agent to do?
 2. **Read the injected context** — know the current state before changing it.
-3. **Establish identity first** — name, title, description, avatar. Then model and tools. Then the system prompt, which can now reference both.
+3. **Establish identity first** — name, title, description, avatar. Then model, tools, and exactly 5 action-oriented opening questions adapted to the agent's job. Then the system prompt, which can now reference both.
 4. **Report what changed** — state the before → after for each field you touched.
 </workflow>
 

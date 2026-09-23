@@ -102,6 +102,36 @@ export class DocumentModel {
     });
   };
 
+  findOrCreateMarkdownDocument = async (
+    title: string,
+    content: string,
+    parentId?: string,
+  ): Promise<DocumentItem> => {
+    const filename = title.endsWith('.md') ? title : `${title}.md`;
+    const existing = await this.db.query.documents.findFirst({
+      where: and(
+        this.ownership(),
+        eq(documents.fileType, 'markdown'),
+        eq(documents.filename, filename),
+        parentId ? eq(documents.parentId, parentId) : isNull(documents.parentId),
+      ),
+    });
+
+    if (existing) return existing;
+
+    return this.create({
+      content,
+      fileType: 'markdown',
+      filename,
+      parentId,
+      source: '',
+      sourceType: 'api',
+      title,
+      totalCharCount: content.length,
+      totalLineCount: content.length === 0 ? 0 : content.split(/\r\n|\r|\n/).length,
+    });
+  };
+
   create = async (params: Omit<NewDocument, 'userId'>): Promise<DocumentItem> => {
     // Workspace-mode default for visibility:
     //   - explicit visibility wins

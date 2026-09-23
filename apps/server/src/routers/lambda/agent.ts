@@ -24,6 +24,7 @@ import {
   AgentTransferJobModel,
 } from '@/database/models/agentTransferJob';
 import { ChatGroupModel } from '@/database/models/chatGroup';
+import { DocumentModel } from '@/database/models/document';
 import { FileModel } from '@/database/models/file';
 import { KnowledgeBaseModel } from '@/database/models/knowledgeBase';
 import { ResourcePermissionModel } from '@/database/models/resourcePermission';
@@ -87,6 +88,67 @@ const stripAgentPermissionPolicies = (value: Record<string, unknown>) => {
   } = policyPatch;
 
   return { ...value, agencyConfig: safeAgencyConfig };
+};
+
+const DEFAULT_AGENT_WORKSPACE_TEMPLATES = [
+  {
+    content:
+      '# Facture\n\n## Emetteur\n\n## Client\n\n## Prestations\n\n| Description | Quantite | Prix unitaire | Total |\n| --- | ---: | ---: | ---: |\n\n## Conditions\n\n## Notes\n',
+    title: 'Template facture',
+  },
+  {
+    content:
+      '# Devis\n\n## Contexte\n\n## Proposition\n\n## Livrables\n\n## Budget\n\n## Delais\n\n## Conditions de validation\n',
+    title: 'Template devis',
+  },
+  {
+    content:
+      '# Contrat\n\n## Parties\n\n## Objet\n\n## Perimetre\n\n## Responsabilites\n\n## Conditions financieres\n\n## Confidentialite\n\n## Signature\n',
+    title: 'Template contrat',
+  },
+] as const;
+
+const bootstrapAgentWorkspace = async (
+  ctx: {
+    agentModel: AgentModel;
+    serverDB: ConstructorParameters<typeof DocumentModel>[0];
+    userId: string;
+    workspaceId?: string | null;
+  },
+  agent: { id: string; metadata?: Record<string, unknown> | null; title?: string | null },
+) => {
+  const documentModel = new DocumentModel(ctx.serverDB, ctx.userId, ctx.workspaceId ?? undefined);
+
+  const templatesFolder = await documentModel.findOrCreateFolder('Templates');
+  const agentsFolder = await documentModel.findOrCreateFolder('Agents');
+  const sharedFolder = await documentModel.findOrCreateFolder('Commun');
+  const workFolder = await documentModel.findOrCreateFolder(
+    agent.title ? `Agent - ${agent.title}` : `Agent - ${agent.id}`,
+    agentsFolder.id,
+  );
+
+  const templateDocuments = await Promise.all(
+    DEFAULT_AGENT_WORKSPACE_TEMPLATES.map((template) =>
+      documentModel.findOrCreateMarkdownDocument(
+        template.title,
+        template.content,
+        templatesFolder.id,
+      ),
+    ),
+  );
+
+  await ctx.agentModel.updateConfig(agent.id, {
+    metadata: {
+      ...agent.metadata,
+      agentWorkspace: {
+        sharedFolderId: sharedFolder.id,
+        templateDocumentIds: templateDocuments.map((document) => document.id),
+        templatesFolderId: templatesFolder.id,
+        version: 1,
+        workFolderId: workFolder.id,
+      },
+    },
+  });
 };
 
 const protectAgentConfig = async <T extends Record<string, any>>(
@@ -235,6 +297,8 @@ export const agentRouter = router({
           ctx.userId,
         );
       }
+
+      await bootstrapAgentWorkspace(ctx, agent);
 
       return { agentId: agent.id };
     }),
@@ -497,6 +561,8 @@ export const agentRouter = router({
           ctx.userId,
         );
       }
+
+      await bootstrapAgentWorkspace(ctx, agent);
 
       return { agentId: agent.id };
     }),

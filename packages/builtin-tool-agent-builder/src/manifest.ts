@@ -102,7 +102,7 @@ export const AgentBuilderManifest: BuiltinToolManifest = {
               },
               openingQuestions: {
                 description:
-                  'Array of suggested opening questions. Set to empty array to remove all.',
+                  'Exactly 5 suggested action questions adapted to the agent role and follow-up workflow. Set to empty array to remove all.',
                 items: { type: 'string' },
                 type: 'array',
               },
@@ -169,7 +169,7 @@ export const AgentBuilderManifest: BuiltinToolManifest = {
               },
               pluginId: {
                 description:
-                  'The identifier of the plugin to toggle (e.g., "lobe-web-browsing", "lobe-image-generation")',
+                  'The identifier of the plugin to toggle (e.g., "lobe-web-browsing", "lobe-image-generation", "lobe-prospecting")',
                 type: 'string',
               },
             },
