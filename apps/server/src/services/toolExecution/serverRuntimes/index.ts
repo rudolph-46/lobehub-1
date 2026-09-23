@@ -36,6 +36,7 @@ import { memoryRuntime } from './memory';
 import { messageRuntime } from './message';
 import { notebookRuntime } from './notebook';
 import { pageAgentRuntime } from './pageAgent';
+import { prospectingRuntime } from './prospecting';
 import { remoteDeviceRuntime } from './remoteDevice';
 import { selfFeedbackIntentRuntime } from './selfFeedbackIntent';
 import { skillManagementRuntime } from './skillManagement';
@@ -104,6 +105,7 @@ registerRuntimes([
   agentSignalFeedbackIntentRuntime,
   pageAgentRuntime,
   verifyResultRuntime,
+  prospectingRuntime,
 ]);
 
 // ==================== Registry API ====================

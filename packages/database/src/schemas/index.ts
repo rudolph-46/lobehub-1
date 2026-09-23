@@ -52,6 +52,7 @@ export * from './rbac';
 export * from './relations';
 export * from './resourcePermission';
 export * from './resourceTransferRequest';
+export * from './sandboxSession';
 export * from './session';
 export * from './systemBotProvider';
 export * from './task';

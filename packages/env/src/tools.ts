@@ -7,6 +7,9 @@ const optionalNumberEnv = (min: number, max: number) =>
     z.coerce.number().int().max(max).min(min).optional(),
   );
 
+const emptyStringToUndefined = (value: unknown) =>
+  value === '' || value === null ? undefined : value;
+
 const SUPPORTED_MULTIMODAL_IMAGE_FORMATS = ['image/jpeg', 'image/png', 'image/webp'] as const;
 const DEFAULT_MULTIMODAL_IMAGE_FORMATS = SUPPORTED_MULTIMODAL_IMAGE_FORMATS.slice(0, 2);
 const MULTIMODAL_IMAGE_FORMAT_ALIASES: Record<
@@ -55,6 +58,7 @@ export const getToolsConfig = () => {
 
   return createEnv({
     runtimeEnv: {
+      APIFY_API_TOKEN: process.env.APIFY_API_TOKEN,
       CRAWL_CONCURRENCY: process.env.CRAWL_CONCURRENCY,
       CRAWLER_RETRY: process.env.CRAWLER_RETRY,
       CRAWLER_IMPLS: process.env.CRAWLER_IMPLS,
@@ -68,6 +72,7 @@ export const getToolsConfig = () => {
     },
 
     server: {
+      APIFY_API_TOKEN: z.preprocess(emptyStringToUndefined, z.string().optional()),
       CRAWL_CONCURRENCY: optionalNumberEnv(1, 10),
       CRAWLER_RETRY: optionalNumberEnv(0, 3),
       CRAWLER_IMPLS: z.string().optional(),

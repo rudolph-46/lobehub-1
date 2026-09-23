@@ -235,6 +235,9 @@ ENV SANDBOX_PROVIDER="" \
     ONLYBOXES_JIT_TTL_SEC="" \
     ONLYBOXES_LEASE_TTL_SEC=""
 
+# Prospecting
+ENV APIFY_API_TOKEN=""
+
 # Model Variables
 ENV \
     # AI21

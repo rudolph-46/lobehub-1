@@ -32,6 +32,7 @@ import {
 import { MemoryManifest } from '@lobechat/builtin-tool-memory';
 import { MessageManifest, resolveMessageManifest } from '@lobechat/builtin-tool-message';
 import { PageAgentManifest } from '@lobechat/builtin-tool-page-agent';
+import { ProspectingManifest } from '@lobechat/builtin-tool-prospecting';
 import { RemoteDeviceManifest } from '@lobechat/builtin-tool-remote-device';
 import { selfFeedbackIntentManifest } from '@lobechat/builtin-tool-self-iteration';
 import { SkillMaintainerManifest } from '@lobechat/builtin-tool-skill-maintainer';
@@ -64,6 +65,7 @@ export const defaultToolIds = [
   AgentDocumentsManifest.identifier,
   TaskManifest.identifier,
   LobeAgentManifest.identifier,
+  ProspectingManifest.identifier,
 ];
 
 /**
@@ -122,6 +124,7 @@ export const chatModeAllowedToolIds = [
   KnowledgeBaseManifest.identifier,
   MemoryManifest.identifier,
   WebBrowsingManifest.identifier,
+  ProspectingManifest.identifier,
   ImageGenerationManifest.identifier,
 ];
 

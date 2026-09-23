@@ -1,0 +1,20 @@
+{
+  "name": "@lobechat/builtin-tool-prospecting",
+  "version": "1.0.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client/index.ts",
+    "./executionRuntime": "./src/ExecutionRuntime/index.ts",
+    "./manifest": "./src/manifest.ts"
+  },
+  "main": "./src/index.ts",
+  "devDependencies": {
+    "@lobechat/types": "workspace:*"
+  },
+  "peerDependencies": {
+    "antd-style": "*",
+    "react": "*",
+    "react-i18next": "*"
+  }
+}

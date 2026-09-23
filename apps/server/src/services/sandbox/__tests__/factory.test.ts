@@ -52,4 +52,25 @@ describe('sandbox service factory', () => {
     expect(service.kind).toBe('onlyboxes');
     expect(service.capabilities.languages).toEqual(['python', 'javascript', 'typescript']);
   });
+
+  it('uses the railway provider when configured', async () => {
+    vi.doMock('@/envs/sandbox', () => ({
+      sandboxEnv: {
+        RAILWAY_API_TOKEN: 'token',
+        RAILWAY_ENVIRONMENT_ID: 'env-1',
+        SANDBOX_PROVIDER: 'railway',
+      },
+    }));
+    vi.doMock('../providers/railway', () => ({
+      RailwaySandboxProvider: class {
+        capabilities = { shell: true };
+        kind = 'railway';
+      },
+    }));
+
+    const { createSandboxService } = await import('../factory');
+    const service = createSandboxService(baseOptions);
+
+    expect(service.kind).toBe('railway');
+  });
 });

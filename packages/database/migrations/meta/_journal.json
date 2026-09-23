@@ -1183,6 +1183,13 @@
       "when": 1789946516974,
       "tag": "0168_agent_catalog",
       "breakpoints": true
+    },
+    {
+      "idx": 169,
+      "version": "7",
+      "when": 1789950302104,
+      "tag": "0169_sandbox_sessions",
+      "breakpoints": true
     }
   ],
   "version": "6"
